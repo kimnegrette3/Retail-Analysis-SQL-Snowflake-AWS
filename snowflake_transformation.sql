@@ -8,6 +8,8 @@ SELECT * FROM canal_venta; -- looks good
 ----------- TABLE CLIENTE -----------------
 
 SELECT * FROM cliente; 
+DESCRIBE TABLE cliente;
+
 -- Provincia y Localidad, standardize names 
 
 SELECT DISTINCT Provincia -- Looks good
@@ -31,25 +33,30 @@ UPDATE cliente
 
 -- Categorize Edad
 -- Create a new column "AgeCategory" based on the "EDAD" column.
+
 ALTER TABLE cliente
-ADD AgeCategory VARCHAR(50);
+ADD CategoriaEdad VARCHAR(50);
 
 UPDATE cliente -- 3407 rows affected
-SET AgeCategory =
+SET CategoriaEdad =
   CASE
-    WHEN edad < 18 THEN 'Less than 18'
-    WHEN edad BETWEEN 19 AND 29 THEN 'Between 19 and 29'
-    WHEN edad BETWEEN 30 AND 39 THEN 'Between 30 and 39'
-    WHEN edad BETWEEN 40 AND 49 THEN 'Between 40 and 49'
-    WHEN edad BETWEEN 50 AND 59 THEN 'Between 50 and 59'
-    ELSE '60 and older'
+    WHEN edad < 18 THEN 'Menor de 18'
+    WHEN edad BETWEEN 19 AND 29 THEN 'Entre 19 y 29'
+    WHEN edad BETWEEN 30 AND 39 THEN 'Entre 30 y 39'
+    WHEN edad BETWEEN 40 AND 49 THEN 'Entre 40 y 49'
+    WHEN edad BETWEEN 50 AND 59 THEN 'Entre 50 y 59'
+    ELSE 'Mayor de 60'
   END;
 
--- Check format for LONGITUD y LATITUD, turn into decimal
--- Check the data types of "LONGITUD" and "LATITUD" columns.
-DESCRIBE TABLE cliente; 
--- latitud and longitus are varchar and have nulls 
+SELECT DISTINCT Localidad
+FROM cliente
+WHERE Localidad LIKE '%Buenos%';
 
+UPDATE cliente -- 458 rows updated
+SET localidad = 'Ciudad de Buenos Aires'
+WHERE localidad = 'Ciudad De Buenos Aires';    
+
+-- Check format for LONGITUD y LATITUD, turn into decimal
 -- Convert columns to decimal
 UPDATE cliente -- 3407 rows affected
 SET
@@ -65,6 +72,23 @@ SELECT IdCliente, COUNT(*)
 FROM cliente
 GROUP BY IdCliente
 HAVING COUNT(*) > 1; -- no duplicates
+
+-- Fill missing values in categorical columns
+UPDATE cliente -- 31 rows updated
+SET provincia = COALESCE(provincia, 'Sin Dato')
+WHERE provincia IS NULL;
+
+UPDATE cliente -- 46 rows updated
+SET NombreApellido  = COALESCE(NombreApellido, 'Sin Dato')
+WHERE NombreApellido IS NULL;
+
+UPDATE cliente -- 48 rows updated
+SET direccion = COALESCE(direccion, 'Sin Dato')
+WHERE direccion IS NULL;
+
+UPDATE cliente -- 32 rows updated
+SET localidad = COALESCE(localidad, 'Sin Dato')
+WHERE localidad IS NULL;
 
 
 ----------- TABLE SUCURSAL -- -----------
@@ -96,7 +120,7 @@ ORDER BY localidad;
 UPDATE sucursal -- 8 rows affected
 SET localidad = 'Ciudad de Buenos Aires'
 WHERE TRIM(localidad) IN ('CABA', 'Cap. Federal','Cap.   Federal', 'Cap. Fed.', 'CapFed', 'Capital',
-                    'Capital Federal', 'Cdad de Buenos Aires');
+                    'Capital Federal', 'Cdad de Buenos Aires', 'Ciudad De Buenos Aires');
 
 UPDATE sucursal  -- 2 rows affected
 SET localidad = 'Córdoba'
@@ -112,7 +136,7 @@ WHERE TRIM(provincia) IN ('B. Aires', 'B.Aires', 'Bs As', 'Bs.As.', 'Pcia Bs AS'
                     'Prov de Bs As.', 'Provincia de Buenos Aires');
 UPDATE sucursal  -- 4 rows updates
 SET provincia = 'CABA'
-WHERE TRIM(provincia) IN ('C deBuenos Aires', 'Ciudad de Buenos Aires');
+WHERE TRIM(provincia) IN ('C deBuenos Aires', 'Ciudad de Buenos Aires', 'Ciudad De Buenos Aires');
 
 UPDATE sucursal  -- 1 row updated
 SET provincia = 'Córdoba'
@@ -138,6 +162,23 @@ DROP COLUMN latitud;
 ALTER TABLE sucursal
 RENAME COLUMN latitud_ TO latitud;
         
+-- Fill missing values in categorical columns
+UPDATE sucursal -- 0 rows updated
+SET  provincia = COALESCE(provincia, 'Sin Dato')
+WHERE provincia IS NULL;
+
+UPDATE sucursal -- 0 rows updated
+SET sucursal  = COALESCE(sucursal, 'Sin Dato')
+WHERE sucursal IS NULL;
+
+UPDATE sucursal -- 0 rows updated
+SET direccion = COALESCE(direccion, 'Sin Dato')
+WHERE direccion IS NULL;
+
+UPDATE sucursal -- 0 rows updated
+SET localidad = COALESCE(localidad, 'Sin Dato')
+WHERE localidad IS NULL;
+
 
 ---------- TABLE EMPLEADO ------------
 
@@ -160,7 +201,7 @@ SET sucursal =
         WHEN sucursal = 'Cordoba Quiroz' THEN 'Córdoba Quiroz'
         ELSE sucursal
     END;
-
+    
 -- Check Salario, turn into decimal
 DESCRIBE TABLE empleado; -- Salario is varchar
 
@@ -202,6 +243,26 @@ UPDATE empleado
 UPDATE empleado
     SET IdEmpleado = (IdSucursal*100000) + CodigoEmpleado;
 
+-- Fill mising values in categorical columns
+UPDATE empleado --  0 rows updated
+SET nombre = COALESCE(nombre, 'Sin Dato')
+WHERE nombre IS NULL;
+
+UPDATE empleado --  0 rows updated
+SET apellido = COALESCE(apellido, 'Sin Dato')
+WHERE apellido IS NULL;
+
+UPDATE empleado -- 0  rows updated
+SET sucursal  = COALESCE(sucursal, 'Sin Dato')
+WHERE sucursal IS NULL;
+
+UPDATE empleado -- 0  rows updated
+SET sector = COALESCE(sector, 'Sin Dato')
+WHERE sector IS NULL;
+
+UPDATE empleado -- 0  rows updated
+SET cargo = COALESCE(cargo, 'Sin Dato')
+WHERE cargo IS NULL;
 
 ---------- TABLE PRODUCTO -------------
     
@@ -222,6 +283,15 @@ UPDATE producto -- 291 rows updated
 -- Check PRECIO, turn into decimal
 UPDATE producto -- 291 rows updated
     SET precio = CAST(REPLACE(precio, ',', '.') AS DECIMAL(12,2));
+
+-- Fill missing values in categorical columns
+UPDATE producto -- 0 rows affected
+SET producto = COALESCE(producto, 'Sin Dato')
+WHERE producto IS NULL;
+
+UPDATE producto -- 12 rows affected
+SET TipoProducto = COALESCE(TipoProducto, 'Sin Dato')
+WHERE TipoProducto IS NULL;
 
 
 -------- TABLE PROVEEDOR --------------
@@ -253,7 +323,36 @@ UPDATE proveedor
     SET provincia = 'Córdoba'
     WHERE provincia = 'Cordoba';
 
-------- TABLE GASTO -----------
+-- Rename ciudad for localidad and drop column localidad
+ALTER TABLE proveedor
+DROP COLUMN localidad;
+
+ALTER TABLE proveedor
+RENAME COLUMN ciudad TO localidad;
+
+-- Fill missing values in categorical columns
+UPDATE proveedor -- 2 rows updated
+SET proveedor = COALESCE(proveedor, 'Sin Dato')
+WHERE proveedor IS NULL;
+
+UPDATE proveedor -- 0 rows updated
+SET direccion = COALESCE(direccion, 'Sin Dato')
+WHERE direccion IS NULL;
+
+UPDATE proveedor -- 0 rows updated
+SET provincia = COALESCE(provincia, 'Sin Dato')
+WHERE provincia IS NULL;
+
+UPDATE proveedor -- 0 rows updated
+SET pais = COALESCE(pais, 'Sin Dato')
+WHERE pais IS NULL;
+
+UPDATE proveedor -- 0 rows updated
+SET localidad = COALESCE(localidad, 'Sin Dato')
+WHERE localidad IS NULL;
+
+
+------- TABLE TIPO_GASTO -----------
 
 SELECT * FROM tipo_gasto; -- Check MONTO, what is it supposed to mean in this table?
 
@@ -288,8 +387,194 @@ SET v.IdEmpleado = e.IdEmpleado
 FROM empleado e
 WHERE v.IdEmpleado = e.CodigoEmpleado;
 
--- Create calendar table
+------- CALENDAR TABLE --------------
 
+CREATE OR REPLACE TABLE TablaCalendario AS
+  SELECT 
+    DATEADD(DAY, seq4(), '2015-01-01')::DATE AS Fecha,
+    DATE_PART(YEAR, DATEADD(DAY, seq4(), '2015-01-01')) AS Anio,
+    DATE_PART(QUARTER, DATEADD(DAY, seq4(), '2015-01-01')) AS Trimestre,
+    DATE_PART(MONTH, DATEADD(DAY, seq4(), '2015-01-01')) AS Mes,
+    DATE_PART(DAYOFWEEK, DATEADD(DAY, seq4(), '2015-01-01')) AS DiaSemana,
+    DATE_PART(DAY, DATEADD(DAY, seq4(), '2015-01-01')) AS DiaMes
+  FROM TABLE(GENERATOR(ROWCOUNT => 3000));
 
+-- Verificar la tabla calendario
+SELECT * FROM TablaCalendario order by fecha desc limit 4;
 
 -- Normalize dimension tables
+
+-- Table empleado: Make dimensions for sector, cargo, drop column sucursal
+
+CREATE OR REPLACE TABLE cargo(
+IdCargo INT AUTOINCREMENT PRIMARY KEY,
+Cargo VARCHAR(50) NOT NULL
+);
+
+INSERT INTO cargo(Cargo) -- 5 rows inserted
+SELECT DISTINCT TRIM(Cargo) -- There are lead or trail spaces in this field in table Empleado
+FROM empleado
+ORDER BY 1;
+
+ALTER TABLE empleado 
+ADD IdCargo INT NOT NULL DEFAULT 0; 
+
+UPDATE empleado e -- 267 rows updated
+SET e.IdCargo = c.IdCargo
+FROM cargo c
+WHERE TRIM(e.Cargo) = c.Cargo;
+
+
+CREATE OR REPLACE TABLE sector(
+IdSector INT AUTOINCREMENT PRIMARY KEY,
+Sector VARCHAR(50) NOT NULL
+);
+
+INSERT INTO sector(Sector) -- 6 rows inserted
+SELECT DISTINCT TRIM(Sector)
+FROM empleado
+ORDER BY 1;
+
+ALTER TABLE empleado 
+ADD IdSector INT NOT NULL DEFAULT 0;
+
+UPDATE empleado e --  267 rows updated
+SET e.IdSector = s.IdSector
+FROM sector s
+WHERE TRIM(e.Sector) = s.Sector;
+
+ALTER TABLE empleado
+DROP COLUMN cargo, sector, sucursal;
+
+
+-- Table producto: Make dimension for TipoProducto
+
+CREATE OR REPLACE TABLE tipo_producto(
+IdTipoProducto INT AUTOINCREMENT PRIMARY KEY,
+TipoProducto VARCHAR(50) NOT NULL
+);
+
+INSERT INTO tipo_producto(TipoProducto) -- 11 rows inserted
+SELECT DISTINCT TRIM(TipoProducto)
+FROM producto
+ORDER BY 1;
+
+ALTER TABLE producto
+ADD IdTipoProducto INT NOT NULL DEFAULT 0;
+
+UPDATE producto p -- 291 rows updated
+SET p.IdTipoProducto = tp.IdTipoProducto
+FROM tipo_producto tp
+WHERE TRIM(p.TipoProducto) = tp.TipoProducto;
+
+ALTER TABLE producto
+DROP COLUMN TipoProducto;
+
+-- Table proveedor: Check if possible to make dimensions for provincia, localidad, pais
+-- Table sucursal: Check if possible to make dimensions for provincia and localidad
+
+CREATE OR REPLACE TABLE localidad(
+IdLocalidad INT AUTOINCREMENT PRIMARY KEY,
+Localidad VARCHAR(250) NOT NULL,
+Provincia VARCHAR(250) NOT NULL,
+IdProvincia INT NOT NULL DEFAULT 0
+);
+
+INSERT INTO localidad(Localidad, Provincia) -- 594 rows inserted 
+SELECT DISTINCT Localidad, Provincia
+FROM cliente
+UNION 
+SELECT DISTINCT Localidad, Provincia
+FROM proveedor
+UNION
+SELECT DISTINCT Localidad,Provincia
+FROM sucursal
+ORDER BY 2,1;
+
+SELECT * FROM localidad;
+
+--Check for duplicates
+SELECT Localidad, COUNT(*)
+FROM localidad
+GROUP BY Localidad
+HAVING COUNT(*)>1; -- There are 13 localidades with two provincias, may be real according to Argentine geography
+
+SELECT * 
+FROM localidad
+WHERE Localidad = 'Ciudad de Buenos Aires'; -- delete idlocalidad 69 and 341 because they have C. Buenos Aires as provincia
+
+SELECT * 
+FROM localidad
+WHERE Localidad = 'Sin Dato'; -- delete idlocalidad 584 as it is Sin dato - Tucuman
+
+DELETE FROM localidad -- 3 rows deleted
+WHERE IdLocalidad = 69 OR IdLocalidad = 584 OR IdLocalidad = 341;
+
+SELECT DISTINCT Provincia
+FROM localidad;-- Correct mispelling
+
+UPDATE localidad
+    SET provincia =
+        CASE
+            WHEN provincia = 'Rio Negro' THEN 'Río Negro'
+            WHEN provincia = 'Tucuman' THEN 'Tucumán'
+            ELSE provincia
+        END;
+
+
+CREATE OR REPLACE TABLE provincia(
+IdProvincia INT AUTOINCREMENT PRIMARY KEY,
+Provincia VARCHAR(50) NOT NULL
+);
+
+INSERT INTO provincia(Provincia) -- 10 rows inserted
+SELECT DISTINCT Provincia
+FROM localidad
+ORDER BY 1;
+
+SELECT * FROM provincia;
+
+UPDATE localidad l -- 591 rows updated
+SET l.IdProvincia = p.IdProvincia
+FROM provincia p
+WHERE l.provincia = p.provincia;
+
+ALTER TABLE localidad
+DROP COLUMN Provincia;
+
+-- Add columns for IdLocalidad  and drop old columns of localidad in cliente, sucursal, proveedor
+ALTER TABLE cliente
+ADD IdLocalidad INT NOT NULL DEFAULT 0;
+
+UPDATE cliente c -- 3407 rows updated
+SET c.IdLocalidad = l.IdLocalidad
+FROM localidad l
+WHERE c.Localidad = l.Localidad;
+
+ALTER TABLE cliente
+DROP COLUMN Provincia, Localidad;
+
+ALTER TABLE sucursal
+ADD IdLocalidad INT NOT NULL DEFAULT 0;
+
+UPDATE sucursal s -- 31 rows updated
+SET s.IdLocalidad = l.IdLocalidad
+FROM localidad l
+WHERE s.Localidad = l.Localidad;
+
+ALTER TABLE sucursal
+DROP COLUMN Provincia, Localidad;
+
+ALTER TABLE proveedor
+ADD IdLocalidad INT NOT NULL DEFAULT 0;
+
+UPDATE proveedor p -- 14 rows updated
+SET p.IdLocalidad = l.IdLocalidad
+FROM localidad l
+WHERE p.Localidad = l.Localidad;
+
+ALTER TABLE proveedor
+DROP COLUMN Provincia, Localidad, Pais;
+
+
+-- Create primary and foreign keys to fact and dim tables
