@@ -34,7 +34,7 @@ Our dataset encompassed ten distinct tables, spanning both CSV and XLSX formats.
 ## ETL Process: Data Ingestion and Transformation
 
 <p float="center">
-  <img src="src/captura-snowflake.PNG" width="800" height="400" />
+  <img src="src/captura-snowflake.PNG" width="800" height="400">
 </p>
 
 
@@ -104,7 +104,7 @@ This schema is ideal for situations where storage optimization is crucial and wh
 ### Final Architecture:
 
 <p float="center">
-  <img src="src/data_model_snowflake.png" width="800" height="400" />
+  <img src="src/data_model_snowflake.PNG" width="800" height="400">
 </p>
 
 ## Visual Insights: Empowering Decision-Making with PowerBI

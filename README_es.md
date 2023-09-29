@@ -98,7 +98,7 @@ Entre sus ventajas podemos destacar:
 Este esquema es ideal para situaciones donde la optimización del almacenamiento es crucial y donde hay necesidad de mantener la integridad de los datos incluso a expensas de una complejidad ligeramente aumentada en las consultas.
 
 ### Arquitectura Final:
-![Arquitectura Final](src/data_model_snowflake.png)
+![Arquitectura Final](src/data_model_snowflake.PNG)
 
 ## Visualizaciones: Empoderando la Toma de Decisiones con PowerBI
 
