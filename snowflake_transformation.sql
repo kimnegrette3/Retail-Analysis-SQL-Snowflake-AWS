@@ -578,3 +578,127 @@ DROP COLUMN Provincia, Localidad, Pais;
 
 
 -- Create primary and foreign keys to fact and dim tables
+-- Create PRIMARY KEYS for all the tables
+ALTER TABLE canal_venta ADD CONSTRAINT pk_canal_venta 
+PRIMARY KEY (IdCanal);
+
+ALTER TABLE cargo ADD CONSTRAINT pk_canal_venta 
+PRIMARY KEY (IdCargo);
+
+ALTER TABLE cliente add constraint pk_cliente 
+PRIMARY KEY (IdCliente);
+
+ALTER TABLE compra add constraint pk_compra 
+PRIMARY KEY (IdCompra);
+
+ALTER TABLE empleado add constraint pk_empleado 
+PRIMARY KEY (IdEmpleado);
+
+ALTER TABLE gasto add constraint pk_gasto 
+PRIMARY KEY (IdGasto);
+
+ALTER TABLE  localidad add constraint pk_localidad 
+PRIMARY KEY (IdLocalidad);
+
+ALTER TABLE producto add constraint pk_producto 
+PRIMARY KEY (IdProducto);
+
+ALTER TABLE proveedor add constraint pk_proveedor 
+PRIMARY KEY (IdProveedor);
+
+ALTER TABLE provincia add constraint pk_provincia 
+PRIMARY KEY (IdProvincia);
+
+ALTER TABLE sector add constraint pk_sector 
+PRIMARY KEY (IdSector);
+
+ALTER TABLE sucursal add constraint pk_sucursal 
+PRIMARY KEY (IdSucursal);
+
+ALTER TABLE TablaCalendario add constraint pk_calendario 
+PRIMARY KEY (Fecha);
+
+ALTER TABLE tipo_gasto add constraint pk_tipo_gasto 
+PRIMARY KEY (IdTipoGasto);
+
+ALTER TABLE tipo_producto add constraint pk_tipo_producto 
+PRIMARY KEY (IdTipoProducto);
+
+ALTER TABLE venta add constraint pk_venta 
+PRIMARY KEY (IdVenta);
+
+
+-- Create FOREIGN KEYS for all the tables
+
+-- Table Cliente 
+
+ALTER TABLE cliente ADD CONSTRAINT fk_cliente_localidad 
+FOREIGN KEY (IdLocalidad) REFERENCES localidad(IdLocalidad);
+
+
+-- Table Compra
+ALTER TABLE compra ADD CONSTRAINT fk_compra_producto 
+FOREIGN KEY (IdProducto) REFERENCES producto(IdProducto);
+
+ALTER TABLE compra ADD CONSTRAINT fk_compra_proveedor 
+FOREIGN KEY (IdProveedor) REFERENCES proveedor(IdProveedor);
+
+
+-- Empleado
+ALTER TABLE empleado ADD CONSTRAINT fk_empleado_sucursal F
+OREIGN KEY (IdSucursal) REFERENCES sucursal(IdSucursal);
+
+ALTER TABLE empleado ADD CONSTRAINT fk_empleado_cargo 
+FOREIGN KEY(IdCargo) REFERENCES cargo(IdCargo);
+
+ALTER TABLE empleado ADD CONSTRAINT fk_empleado_sector 
+FOREIGN KEY(IdSector) REFERENCES sector(IdSector);
+
+
+-- Table Gasto
+ALTER TABLE gasto ADD CONSTRAINT fk_gasto_sucursal 
+FOREIGN KEY (IdSucursal) REFERENCES sucursal(IdSucursal); 
+
+ALTER TABLE gasto ADD CONSTRAINT fk_gasto_tipo_gasto 
+FOREIGN KEY (IdTipoGasto) REFERENCES tipo_gasto(IdTipoGasto);
+
+
+-- Table Localidad
+ALTER TABLE localidad ADD CONSTRAINT fk_localidad_provincia 
+FOREIGN KEY (IdProvincia) REFERENCES provincia(IdProvincia);
+
+
+-- Table Producto
+ALTER TABLE producto ADD CONSTRAINT fk_producto_tipo_producto 
+FOREIGN KEY (IdTipoProducto) REFERENCES tipo_producto(IdTipoProducto);
+
+
+-- Table Proveedor
+ALTER TABLE proveedor ADD CONSTRAINT fk_proveedor_localidad 
+FOREIGN KEY (IdLocalidad) REFERENCES localidad(IdLocalidad);
+
+
+-- Table Sucursal
+ALTER TABLE sucursal ADD CONSTRAINT fk_sucursal_localidad 
+FOREIGN KEY (IdLocalidad) REFERENCES localidad(IdLocalidad);
+
+
+
+-- Table Venta 
+ALTER TABLE venta ADD CONSTRAINT fk_venta_canal_venta 
+FOREIGN KEY (IdCanal) REFERENCES canal_venta(IdCanal);
+
+ALTER TABLE venta ADD CONSTRAINT fk_venta_cliente 
+FOREIGN KEY (IdCliente) REFERENCES cliente(IdCliente);
+
+ALTER TABLE venta ADD CONSTRAINT fk_venta_sucursal 
+FOREIGN KEY (IdSucursal) REFERENCES sucursal(IdSucursal);
+
+ALTER TABLE venta ADD CONSTRAINT fk_venta_empleado 
+FOREIGN KEY (IdEmpleado) REFERENCES empleado(IdEmpleado);
+
+ALTER TABLE venta ADD CONSTRAINT fk_venta_producto 
+FOREIGN KEY (IdProducto) REFERENCES producto(IdProducto);
+
+ALTER TABLE venta ADD CONSTRAINT fk_venta_calendario 
+FOREIGN KEY (Fecha) REFERENCES TablaCalendario(Fecha);
